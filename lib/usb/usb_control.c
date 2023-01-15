@@ -92,26 +92,19 @@ int usbd_register_control_callback(usbd_device *usbd_dev, uint8_t type,
 
 static void usb_control_send_chunk(usbd_device *usbd_dev)
 {
-	if (usbd_dev->desc->bMaxPacketSize0 <
-			usbd_dev->control_state.ctrl_len) {
+	/* SAMD21 supports long packets in hardware */
+	if (!usbd_dev->driver->supports_multi_packets 
+			&& usbd_dev->desc->bMaxPacketSize0 < usbd_dev->control_state.ctrl_len) {
 		/* Data stage, normal transmission */
-		usbd_ep_write_packet(usbd_dev, 0,
-				     usbd_dev->control_state.ctrl_buf,
-				     usbd_dev->desc->bMaxPacketSize0);
+		usbd_ep_write_packet(usbd_dev, 0, usbd_dev->control_state.ctrl_buf, usbd_dev->desc->bMaxPacketSize0);
 		usbd_dev->control_state.state = DATA_IN;
-		usbd_dev->control_state.ctrl_buf +=
-			usbd_dev->desc->bMaxPacketSize0;
-		usbd_dev->control_state.ctrl_len -=
-			usbd_dev->desc->bMaxPacketSize0;
+		usbd_dev->control_state.ctrl_buf += usbd_dev->desc->bMaxPacketSize0;
+		usbd_dev->control_state.ctrl_len -= usbd_dev->desc->bMaxPacketSize0;
 	} else {
 		/* Data stage, end of transmission */
-		usbd_ep_write_packet(usbd_dev, 0,
-				     usbd_dev->control_state.ctrl_buf,
-				     usbd_dev->control_state.ctrl_len);
+		usbd_ep_write_packet(usbd_dev, 0, usbd_dev->control_state.ctrl_buf, usbd_dev->control_state.ctrl_len);
 
-		usbd_dev->control_state.state =
-			usbd_dev->control_state.needs_zlp ?
-			DATA_IN : LAST_DATA_IN;
+		usbd_dev->control_state.state = usbd_dev->control_state.needs_zlp ? DATA_IN : LAST_DATA_IN;
 		usbd_dev->control_state.needs_zlp = false;
 		usbd_dev->control_state.ctrl_len = 0;
 		usbd_dev->control_state.ctrl_buf = NULL;
@@ -178,10 +171,12 @@ static void usb_control_setup_read(usbd_device *usbd_dev,
 
 	if (usb_control_request_dispatch(usbd_dev, req)) {
 		if (req->wLength) {
+			// SAMD21 supports ZLPs in hardware
 			usbd_dev->control_state.needs_zlp =
-				needs_zlp(usbd_dev->control_state.ctrl_len,
-					req->wLength,
-					usbd_dev->desc->bMaxPacketSize0);
+				usbd_dev->driver->supports_multi_packets ? false :
+					needs_zlp(usbd_dev->control_state.ctrl_len,
+						req->wLength,
+						usbd_dev->desc->bMaxPacketSize0);
 			/* Go to data out stage if handled. */
 			usb_control_send_chunk(usbd_dev);
 		} else {
@@ -218,7 +213,6 @@ static void usb_control_setup_write(usbd_device *usbd_dev,
 
 /* Do not appear to belong to the API, so are omitted from docs */
 /**@}*/
-
 void _usbd_control_setup(usbd_device *usbd_dev, uint8_t ea)
 {
 	struct usb_setup_data *req = &usbd_dev->control_state.req;

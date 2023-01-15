@@ -9,7 +9,8 @@
  * @author 2020 Gwenhael Goavec-Merou <gwenhael.goavec-merou@trabucayre.com>
  */
 
-#pragma once
+#ifndef LIBOPENCM3_GPIO_H
+#define LIBOPENCM3_GPIO_H
 
 /**@{*/
 
@@ -248,9 +249,13 @@ void gpio_set(uint32_t gpioport, uint32_t gpios);
 void gpio_clear(uint32_t gpioport, uint32_t gpios);
 uint32_t gpio_get(uint32_t gpioport, uint32_t gpios);
 void gpio_toggle(uint32_t gpioport, uint32_t gpios);
+void gpio_set_input(uint32_t gpioport, uint32_t gpios);
+void gpio_set_output(uint32_t gpioport, uint32_t gpios);
 uint32_t port_read(uint32_t port);
 void port_write(uint32_t port, uint32_t data);
 
 END_DECLS
 
 /**@}*/
+
+#endif

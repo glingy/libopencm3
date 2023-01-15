@@ -19,6 +19,8 @@
 
 #if defined(SAM4L)
 #       include <libopencm3/sam/4l/pm.h>
+#elif defined(SAMD)
+#       include <libopencm3/sam/d/pm.h>
 #else
 #       error "PM undefined for your processor family."
 #endif

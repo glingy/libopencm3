@@ -23,6 +23,10 @@
 #include <libopencm3/cm3/common.h>
 #include <libopencm3/sam/memorymap.h>
 
+#ifdef SAMD
+#include <libopencm3/sam/d/usart.h>
+#else
+
 #define USART0		USART0_BASE
 #define USART1		USART1_BASE
 #define USART2		USART2_BASE
@@ -240,3 +244,4 @@ END_DECLS
 
 #endif
 
+#endif

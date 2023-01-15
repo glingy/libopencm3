@@ -8,7 +8,7 @@
 
 /**@{*/
 
-#include <libopencm3/sam/d/port.h>
+#include <libopencm3/sam/d/gpio.h>
 
 /** @brief Initialize GPIO pins
  *
@@ -30,6 +30,7 @@ void gpio_mode_setup(uint32_t gpioport, uint8_t mode, uint8_t cnf, uint32_t gpio
 	/* enable input buffer */
 	if (mode != GPIO_MODE_OUTPUT) {
 		reg |= PORT_WRCONFIG_INEN;
+		PORT_CTRL(PORTA) |= gpios;
 	}
 	/* set pmuxen */
 	if (cnf == GPIO_CNF_AF) {
@@ -160,6 +161,31 @@ uint32_t port_read(uint32_t port)
 void port_write(uint32_t port, uint32_t data)
 {
 	PORT_OUT(port) = data;
+}
+
+/** @brief Set direction to input for specified pins from a port
+ *
+ * Set direction to input for specified pins from a port
+ *
+ * @param[in] port register address base @ref port_reg_base
+ * @param[in] data @ref gpio_pin_id. Any combination of pins
+ *           may be specified by OR'ing then together.
+ */
+void gpio_set_input(uint32_t gpioport, uint32_t gpios)
+{
+	PORT_DIRCLR(gpioport) = gpios;
+}
+
+/** @brief Set direction to output for specified pins from a port
+ *
+ * Set direction to output for specified pins from a port
+ *
+ * @param[in] port register address base @ref port_reg_base
+ * @param[in] data @ref gpio_pin_id. Any combination of pins
+ *           may be specified by OR'ing then together.
+ */
+void gpio_set_output(uint32_t gpioport, uint32_t gpios) {
+	PORT_DIRSET(gpioport) = gpios;
 }
 
 /**@}*/

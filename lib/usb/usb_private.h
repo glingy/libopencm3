@@ -160,6 +160,7 @@ struct _usbd_driver {
 	void (*disconnect)(usbd_device *usbd_dev, bool disconnected);
 	uint32_t base_address;
 	bool set_address_before_status;
+	bool supports_multi_packets;
 	uint16_t rx_fifo_size;
 };
 

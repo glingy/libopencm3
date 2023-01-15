@@ -31,6 +31,8 @@
 #       include <libopencm3/sam/3x/gpio.h>
 #elif defined(SAM4L)
 #       include <libopencm3/sam/4l/gpio.h>
+#elif defined(SAMD)
+#       include <libopencm3/sam/d/gpio.h>
 #else
 #       error "sam family not defined."
 #endif
