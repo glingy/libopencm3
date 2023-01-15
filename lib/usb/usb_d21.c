@@ -17,6 +17,9 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * NOTE: Max total packet length is 256 bytes.
+ */
 #include <string.h>
 #include <libopencm3/cm3/common.h>
 #include <libopencm3/usb/usbd.h>
@@ -30,10 +33,10 @@
 
 
 /* Receive FIFO size in 32-bit words. */
-#define NUM_ENDPOINTS 8
-#define RX_FIFO_SIZE 512
+#define NUM_ENDPOINTS 3
+#define FIFO_SIZE 256
 
-static char ep_fifo[NUM_ENDPOINTS][2][RX_FIFO_SIZE];
+static char ep_fifo[NUM_ENDPOINTS][2][FIFO_SIZE];
 
 static struct samd21_usbd_endpoint_ram_registers {
 	struct __packed {
@@ -80,7 +83,7 @@ const struct _usbd_driver samd21_usb_driver = {
 	.base_address 		= USB_BASE,
 	.set_address_before_status = 0,
 	.supports_multi_packets = 1,
-	.rx_fifo_size = RX_FIFO_SIZE,
+	.rx_fifo_size = FIFO_SIZE,
 };
 
 /**
@@ -265,7 +268,6 @@ static void samd21_usbd_ep_nak_set(usbd_device *dev, uint8_t addr, uint8_t nak)
 		USB_EPSTATUSCLRn(addr) = USB_EPSTATUS_BK0RDY;
 }
 
-// Next here
 static uint16_t samd21_usbd_ep_write_packet(usbd_device *dev, uint8_t addr, const void *buf, uint16_t len)
 {
 	(void)dev;
